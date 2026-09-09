@@ -141,7 +141,8 @@ function parseFile(f) {
 }
 
 // ---------- 页面骨架 ----------
-function page(title, body) {
+// rootPrefix：相对站点根的前缀（列表页 ''，文章页 '../'）
+function page(title, body, rootPrefix = '') {
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -157,7 +158,7 @@ ${baseCss}
 <body>
 <div class="wrap">
   <header class="site">
-    <div class="site-name"><a href="index.html">${site.name || '我的博客'}</a></div>
+    <div class="site-name"><a href="${rootPrefix}index.html">${site.name || '我的博客'}</a></div>
     ${site.subtitle ? `<div class="subtitle">${site.subtitle}</div>` : ''}
   </header>
   <main>
@@ -220,7 +221,7 @@ for (const p of posts) {
   <div class="md-body">${bodyHtml}</div>
   <a class="back" href="../index.html">← 返回列表</a>
 </article>`;
-  fs.writeFileSync(path.join(distDir, 'posts', p.slug + '.html'), page(`${displayTitle(p.title)} · ${site.name || '我的博客'}`, postHtml));
+  fs.writeFileSync(path.join(distDir, 'posts', p.slug + '.html'), page(`${displayTitle(p.title)} · ${site.name || '我的博客'}`, postHtml, '../'));
 }
 
 console.log(`✔ 构建完成：${posts.length} 篇文章 → dist/（模板：${tplName}）`);
