@@ -46,7 +46,7 @@ const tweakCss = overrides.length ? `:root{${overrides.join(';')}}` : '';
 // ---------- 基础布局 CSS（所有模板共用） ----------
 const baseCss = `
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:var(--font-family);font-size:var(--font-size);line-height:1.8;-webkit-font-smoothing:antialiased;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-family);font-size:var(--font-size);line-height:1.8;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
 .wrap{max-width:var(--width);margin:0 auto;padding:0 24px;}
 header.site{padding:72px 0 28px;}
 .site-name{font-size:24px;font-weight:600;letter-spacing:0.04em;}
@@ -56,11 +56,8 @@ main{padding:36px 0 64px;}
 article.post{padding:22px 0;border-bottom:1px solid var(--line);}
 article.post:last-child{border-bottom:none;}
 article.post.essay{cursor:pointer;}
-article.post.essay:hover{background:rgba(0,0,0,.015);}
 .post .title{flex:1 1 auto;min-width:0;font-size:16px;color:var(--text);text-decoration:none;}
-.post .title:hover{color:var(--accent);}
-.post.article .title{display:inline-block;background:rgba(0,0,0,.045);padding:5px 14px;border-radius:8px;transition:background .15s;}
-.post.article .title:hover{background:rgba(0,0,0,.08);color:var(--text);}
+.post.article .title{display:inline-block;background:rgba(0,0,0,.045);padding:5px 14px;border-radius:8px;}
 .post .date{font-size:12px;color:var(--muted);white-space:nowrap;}
 .post .excerpt{flex:1 1 100%;margin-top:4px;font-size:13px;color:var(--muted);}
 .essay-body{flex:1 1 100%;margin-top:0;font-size:14px;color:var(--text);}
