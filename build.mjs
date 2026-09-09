@@ -166,7 +166,7 @@ const posts = files.map(parseFile).sort((a, b) => (a.date < b.date ? 1 : -1));
 // 列表页
 const listItems = posts.map((p) => {
   const href = `posts/${encodeURI(p.slug)}.html`;
-  const dateHtml = (t.show_date !== false) ? `<span class="date">${p.date}</span>` : '';
+  const dateHtml = (t.show_date === true) ? `<span class="date">${p.date}</span>` : '';
   const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
   const bodyHtml = md.render(stripLeadingH1(raw));
   const m = bodyHtml.match(/<p>([\s\S]*?)<\/p>/);
@@ -191,7 +191,7 @@ for (const p of posts) {
   const bodyHtml = md.render(stripLeadingH1(raw));
   const postHtml = `<article class="post-full">
   <h1 class="p-title">${p.title}</h1>
-  ${(t.show_date !== false) ? `<div class="p-date">${p.date}</div>` : ''}
+  ${(t.show_date === true) ? `<div class="p-date">${p.date}</div>` : ''}
   <div class="md-body">${bodyHtml}</div>
   <a class="back" href="../index.html">← 返回列表</a>
 </article>`;
