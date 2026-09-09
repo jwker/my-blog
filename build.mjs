@@ -58,6 +58,16 @@ article.post{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;paddi
 .post .title:hover{color:var(--accent);}
 .post .date{font-size:12px;color:var(--muted);white-space:nowrap;}
 .post .excerpt{flex:1 1 100%;margin-top:4px;font-size:13px;color:var(--muted);}
+article.post.essay{border-left:3px solid var(--accent);padding-left:18px;}
+.essay-body{flex:1 1 100%;margin-top:8px;font-size:14px;color:var(--text);}
+.essay-body p{margin:.7em 0;}
+.essay-body h1,.essay-body h2,.essay-body h3{line-height:1.5;margin:1em 0 .4em;font-size:1.1em;}
+.essay-body blockquote{margin:.8em 0;padding:.1em .8em;border-left:3px solid var(--accent);color:var(--muted);}
+.essay-body code{background:rgba(0,0,0,.06);padding:.1em .35em;border-radius:4px;font-size:.9em;}
+.essay-body pre{background:rgba(0,0,0,.05);padding:10px 14px;border-radius:8px;overflow-x:auto;}
+.essay-body img{max-width:100%;height:auto;border-radius:6px;}
+.essay-body a{color:var(--accent);}
+.essay-body ul,.essay-body ol{margin:.6em 0;padding-left:1.5em;}
 .post-full{padding:8px 0 40px;}
 .post-full .p-title{font-size:26px;font-weight:600;line-height:1.5;}
 .post-full .p-date{font-size:13px;color:var(--muted);margin-top:10px;}
@@ -162,11 +172,24 @@ fs.mkdirSync(path.join(distDir, 'posts'), { recursive: true });
 
 const files = walk(contentDir).sort();
 const posts = files.map(parseFile).sort((a, b) => (a.date < b.date ? 1 : -1));
+// 分类：标题含"随笔" → 随笔（列表内联全文），其余 → 文章（列表只显示标题）
+for (const p of posts) p.isEssay = p.title.includes('随笔');
 
 // 列表页
 const listItems = posts.map((p) => {
   const href = `posts/${encodeURI(p.slug)}.html`;
   const dateHtml = (t.show_date === true) ? `<span class="date">${p.date}</span>` : '';
+  if (p.isEssay) {
+    // 随笔：直接内联显示完整内容，标题仍可点击进详情
+    const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
+    const bodyHtml = md.render(stripLeadingH1(raw));
+    return `<article class="post essay">
+  <a class="title" href="${href}">${p.title}</a>
+  ${dateHtml}
+  <div class="essay-body">${bodyHtml}</div>
+</article>`;
+  }
+  // 文章：只显示标题，点击进详情
   const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
   const bodyHtml = md.render(stripLeadingH1(raw));
   const m = bodyHtml.match(/<p>([\s\S]*?)<\/p>/);
@@ -190,8 +213,6 @@ for (const p of posts) {
   const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
   const bodyHtml = md.render(stripLeadingH1(raw));
   const postHtml = `<article class="post-full">
-  <h1 class="p-title">${p.title}</h1>
-  ${(t.show_date === true) ? `<div class="p-date">${p.date}</div>` : ''}
   <div class="md-body">${bodyHtml}</div>
   <a class="back" href="../index.html">← 返回列表</a>
 </article>`;
