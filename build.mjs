@@ -48,7 +48,7 @@ const baseCss = `
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:var(--font-family);font-size:var(--font-size);line-height:1.8;-webkit-font-smoothing:antialiased;}
 .wrap{max-width:var(--width);margin:0 auto;padding:0 24px;}
-header.site{padding:72px 0 28px;border-bottom:1px solid var(--line);}
+header.site{padding:72px 0 28px;}
 .site-name{font-size:24px;font-weight:600;letter-spacing:0.04em;}
 .site-name a{color:var(--text);text-decoration:none;}
 .subtitle{margin-top:8px;font-size:13px;color:var(--muted);}
