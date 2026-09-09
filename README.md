@@ -14,7 +14,7 @@ word_count: 940
 不用任何博客框架（Astro / Hexo / Hugo），一个 `build.mjs` 脚本 + 一个 `template.json` 配置，搞定一个极简静态博客。
 
 - **内容 = Markdown 文件**：在 `content/` 新建 `.md` 就是写文章，不需要写 frontmatter
-- **标题取文件名**：`雨天读书记.md` → 标题「雨天读书记」；**文件名不写日期**，日期自动取该文件最后提交的时间
+- **标题取文件名**：`雨天读书记.md` → 标题「雨天读书记」；**文件名和页面都不显示日期**，列表就是纯标题
 - **无标签、无分类**：就是一张文章列表，按日期倒序
 - **模板可换可微调**：`template.json` 一个配置文件切换模板、调整配色字体
 - **发布免费免备案**：GitHub Actions 自动构建 → 推到 gh-pages 分支 → GitHub Pages 出站
@@ -43,8 +43,7 @@ content/
 └── 一碗深夜的面.md
 ```
 
-> 日期规则：优先取该文件**最后一次 git 提交的日期**（改完文章记得提交）；文件从未提交过时，取本地修改时间。排序按日期倒序。
-> 兼容旧写法：文件名带日期前缀（`2026-09-09-标题.md`）时，日期仍会从文件名解析。
+> 页面不显示日期，列表顺序 = 文章最后提交时间倒序（新写的在前）。想显示日期时，把 `template.json` 里 `show_date` 改为 `true`。
 
 ## 本地预览
 
@@ -103,7 +102,7 @@ git push -u origin main
 | `tweak.bg` / `tweak.text` | 背景色 / 文字色，可覆盖模板默认值 |
 | `tweak.font_family` | 字体：`sans`（黑体）/ `serif`（宋体）/ `mono`（等宽） |
 | `tweak.font_size` | 正文字号（px） |
-| `tweak.show_date` | 列表是否显示日期（标题旁小字） |
+| `tweak.show_date` | 是否显示日期（默认 `false`，纯标题列表） |
 | `tweak.show_excerpt` | 列表是否显示正文摘要 |
 
 想加新模板：在 `templates/` 新建 `xxx.css`（参考现有模板，定义 `:root` 变量即可），然后在 `template.json` 把 `template` 改成 `xxx`。

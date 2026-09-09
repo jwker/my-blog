@@ -10,7 +10,7 @@
     "text": "#1a1a1a",
     "font_family": "sans",
     "font_size": 16,
-    "show_date": true,
+    "show_date": false,
     "show_excerpt": false
   }
 }
