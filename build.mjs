@@ -53,12 +53,13 @@ header.site{padding:72px 0 28px;border-bottom:1px solid var(--line);}
 .site-name a{color:var(--text);text-decoration:none;}
 .subtitle{margin-top:8px;font-size:13px;color:var(--muted);}
 main{padding:36px 0 64px;}
-article.post{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;padding:20px 0;border-bottom:1px solid var(--line);}
+article.post{padding:18px 0;}
+article.post.essay{padding:30px 0;}
 .post .title{flex:1 1 auto;min-width:0;font-size:17px;color:var(--text);text-decoration:none;}
 .post .title:hover{color:var(--accent);}
+.post.article .title{font-size:15px;color:var(--muted);}
 .post .date{font-size:12px;color:var(--muted);white-space:nowrap;}
 .post .excerpt{flex:1 1 100%;margin-top:4px;font-size:13px;color:var(--muted);}
-article.post.essay{border-left:3px solid var(--accent);padding-left:18px;}
 .essay-body{flex:1 1 100%;margin-top:8px;font-size:14px;color:var(--text);}
 .essay-body p{margin:.7em 0;}
 .essay-body h1,.essay-body h2,.essay-body h3{line-height:1.5;margin:1em 0 .4em;font-size:1.1em;}
@@ -98,6 +99,12 @@ function stripLeadingH1(raw) {
   const lines = raw.split('\n');
   if (lines[0] && /^#\s+/.test(lines[0])) lines.shift();
   return lines.join('\n');
+}
+
+// 列表显示用标题：去掉"随笔"字样（随笔是常态，标题不再重复出现"随笔"）
+function displayTitle(title) {
+  const t = title.replace(/随笔/g, '').replace(/^[\s·\-—_、，,]+/, '').trim();
+  return t || title;
 }
 
 // ---------- 扫描并解析文章 ----------
@@ -180,23 +187,23 @@ const listItems = posts.map((p) => {
   const href = `posts/${encodeURI(p.slug)}.html`;
   const dateHtml = (t.show_date === true) ? `<span class="date">${p.date}</span>` : '';
   if (p.isEssay) {
-    // 随笔：直接内联显示完整内容，标题仍可点击进详情
+    // 随笔：主体内容，直接内联显示完整内容，标题（去"随笔"字样）可点击进详情
     const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
     const bodyHtml = md.render(stripLeadingH1(raw));
     return `<article class="post essay">
-  <a class="title" href="${href}">${p.title}</a>
+  <a class="title" href="${href}">${displayTitle(p.title)}</a>
   ${dateHtml}
   <div class="essay-body">${bodyHtml}</div>
 </article>`;
   }
-  // 文章：只显示标题，点击进详情
+  // 文章：偶尔出现的条目，弱化显示（灰字小标题），点击进详情
   const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
   const bodyHtml = md.render(stripLeadingH1(raw));
   const m = bodyHtml.match(/<p>([\s\S]*?)<\/p>/);
   const excerpt = (m ? m[1] : bodyHtml).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   const excerptHtml = (t.show_excerpt && excerpt) ? `<p class="excerpt">${excerpt.length > 80 ? excerpt.slice(0, 80) + '…' : excerpt}</p>` : '';
-  return `<article class="post">
-  <a class="title" href="${href}">${p.title}</a>
+  return `<article class="post article">
+  <a class="title" href="${href}">${displayTitle(p.title)}</a>
   ${dateHtml}
   ${excerptHtml}
 </article>`;
@@ -216,7 +223,7 @@ for (const p of posts) {
   <div class="md-body">${bodyHtml}</div>
   <a class="back" href="../index.html">← 返回列表</a>
 </article>`;
-  fs.writeFileSync(path.join(distDir, 'posts', p.slug + '.html'), page(`${p.title} · ${site.name || '我的博客'}`, postHtml));
+  fs.writeFileSync(path.join(distDir, 'posts', p.slug + '.html'), page(`${displayTitle(p.title)} · ${site.name || '我的博客'}`, postHtml));
 }
 
 console.log(`✔ 构建完成：${posts.length} 篇文章 → dist/（模板：${tplName}）`);
