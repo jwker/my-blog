@@ -1,0 +1,16 @@
+{
+  "site": {
+    "name": "JJ 的笔记",
+    "subtitle": "记录日常，写下想法"
+  },
+  "template": "minimal",
+  "tweak": {
+    "accent": "#1a1a1a",
+    "bg": "#ffffff",
+    "text": "#1a1a1a",
+    "font_family": "sans",
+    "font_size": 16,
+    "show_date": true,
+    "show_excerpt": false
+  }
+}

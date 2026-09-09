@@ -1,0 +1,7 @@
+/* 深色极简 */
+:root{
+  --bg:#101012; --text:#e8e6e1; --muted:#6e6e76;
+  --line:#26262b; --accent:#e0a458;
+  --font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  --font-size:16px; --width:640px;
+}

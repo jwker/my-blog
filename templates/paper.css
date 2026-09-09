@@ -1,0 +1,7 @@
+/* 暖纸 */
+:root{
+  --bg:#faf7f2; --text:#3f3a34; --muted:#a39a8c;
+  --line:#ebe4d8; --accent:#8a6f4d;
+  --font-family:'Songti SC','Noto Serif SC','SimSun',serif;
+  --font-size:17px; --width:660px;
+}

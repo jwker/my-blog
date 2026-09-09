@@ -1,0 +1,7 @@
+/* 极简白 */
+:root{
+  --bg:#ffffff; --text:#1a1a1a; --muted:#999999;
+  --line:#eeeeee; --accent:#1a1a1a;
+  --font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  --font-size:16px; --width:640px;
+}
