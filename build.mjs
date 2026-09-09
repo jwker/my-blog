@@ -53,14 +53,17 @@ header.site{padding:72px 0 28px;border-bottom:1px solid var(--line);}
 .site-name a{color:var(--text);text-decoration:none;}
 .subtitle{margin-top:8px;font-size:13px;color:var(--muted);}
 main{padding:36px 0 64px;}
-article.post{padding:18px 0;}
-article.post.essay{padding:30px 0;}
-.post .title{flex:1 1 auto;min-width:0;font-size:17px;color:var(--text);text-decoration:none;}
+article.post{padding:22px 0;border-bottom:1px solid var(--line);}
+article.post:last-child{border-bottom:none;}
+article.post.essay{cursor:pointer;}
+article.post.essay:hover{background:rgba(0,0,0,.015);}
+.post .title{flex:1 1 auto;min-width:0;font-size:16px;color:var(--text);text-decoration:none;}
 .post .title:hover{color:var(--accent);}
-.post.article .title{font-size:15px;color:var(--muted);}
+.post.article .title{display:inline-block;background:rgba(0,0,0,.045);padding:5px 14px;border-radius:8px;transition:background .15s;}
+.post.article .title:hover{background:rgba(0,0,0,.08);color:var(--text);}
 .post .date{font-size:12px;color:var(--muted);white-space:nowrap;}
 .post .excerpt{flex:1 1 100%;margin-top:4px;font-size:13px;color:var(--muted);}
-.essay-body{flex:1 1 100%;margin-top:8px;font-size:14px;color:var(--text);}
+.essay-body{flex:1 1 100%;margin-top:0;font-size:14px;color:var(--text);}
 .essay-body p{margin:.7em 0;}
 .essay-body h1,.essay-body h2,.essay-body h3{line-height:1.5;margin:1em 0 .4em;font-size:1.1em;}
 .essay-body blockquote{margin:.8em 0;padding:.1em .8em;border-left:3px solid var(--accent);color:var(--muted);}
@@ -117,11 +120,11 @@ function walk(dir, out = []) {
   return out;
 }
 
-// 取文件最后一次提交的日期（git），拿不到（未提交/非 git 仓库）返回 null
+// 取文件最后一次提交的时间（git，完整 ISO 含时分秒），拿不到返回 null
 function gitDate(f) {
   try {
     const iso = execSync(`git log -1 --format=%cI -- "${f}"`, { cwd: root, encoding: 'utf8' }).trim();
-    return iso ? iso.slice(0, 10) : null;
+    return iso || null;
   } catch {
     return null;
   }
@@ -132,14 +135,12 @@ function parseFile(f) {
   const base = path.basename(f, '.md');
   // 兼容：文件名带日期前缀（YYYY-MM-DD-标题.md）时仍解析
   const m = base.match(/^(\d{4}-\d{2}-\d{2})-(.+)$/);
-  if (m) return { date: m[1], title: m[2], slug: rel };
+  if (m) return { date: m[1] + 'T00:00:00', title: m[2], slug: rel };
   // 常规：标题 = 文件名，日期 = 该文件最后提交时间
   const g = gitDate(f);
   if (g) return { date: g, title: base, slug: rel };
   // 兜底：未提交过的文件用修改时间
-  const d = fs.statSync(f).mtime;
-  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  return { date, title: base, slug: rel };
+  return { date: fs.statSync(f).mtime.toISOString(), title: base, slug: rel };
 }
 
 // ---------- 页面骨架 ----------
@@ -178,32 +179,31 @@ fs.rmSync(distDir, { recursive: true, force: true });
 fs.mkdirSync(path.join(distDir, 'posts'), { recursive: true });
 
 const files = walk(contentDir).sort();
-const posts = files.map(parseFile).sort((a, b) => (a.date < b.date ? 1 : -1));
+const posts = files.map(parseFile).sort((a, b) => (a.date === b.date ? 0 : (a.date < b.date ? 1 : -1)));
 // 分类：标题含"随笔" → 随笔（列表内联全文），其余 → 文章（列表只显示标题）
 for (const p of posts) p.isEssay = p.title.includes('随笔');
 
 // 列表页
 const listItems = posts.map((p) => {
   const href = `posts/${encodeURI(p.slug)}.html`;
-  const dateHtml = (t.show_date === true) ? `<span class="date">${p.date}</span>` : '';
+  const dateHtml = (t.show_date === true) ? `<span class="date">${p.date.slice(0, 10)}</span>` : '';
   if (p.isEssay) {
-    // 随笔：主体内容，直接内联显示完整内容，标题（去"随笔"字样）可点击进详情
+    // 随笔：主体内容，不显示标题，点击整个区块进详情
     const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
     const bodyHtml = md.render(stripLeadingH1(raw));
-    return `<article class="post essay">
-  <a class="title" href="${href}">${displayTitle(p.title)}</a>
-  ${dateHtml}
+    const jsHref = href.replace(/'/g, '%27');
+    return `<article class="post essay" onclick="location.href='${jsHref}'" role="link">
   <div class="essay-body">${bodyHtml}</div>
 </article>`;
   }
-  // 文章：偶尔出现的条目，弱化显示（灰字小标题），点击进详情
+  // 文章：标题用《》包裹、浅灰背景块区分，点击进详情
   const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
   const bodyHtml = md.render(stripLeadingH1(raw));
   const m = bodyHtml.match(/<p>([\s\S]*?)<\/p>/);
   const excerpt = (m ? m[1] : bodyHtml).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   const excerptHtml = (t.show_excerpt && excerpt) ? `<p class="excerpt">${excerpt.length > 80 ? excerpt.slice(0, 80) + '…' : excerpt}</p>` : '';
   return `<article class="post article">
-  <a class="title" href="${href}">${displayTitle(p.title)}</a>
+  <a class="title" href="${href}">《${displayTitle(p.title)}》</a>
   ${dateHtml}
   ${excerptHtml}
 </article>`;
