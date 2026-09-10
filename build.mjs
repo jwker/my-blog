@@ -59,6 +59,7 @@ article.post.essay{cursor:pointer;}
 .post .title{flex:1 1 auto;min-width:0;font-size:16px;color:var(--text);text-decoration:none;}
 .post.article .title{display:inline-block;background:rgba(0,0,0,.045);padding:5px 14px;border-radius:8px;}
 .post .date{font-size:12px;color:var(--muted);white-space:nowrap;}
+.post.essay .date{margin-left:auto;}
 .post .excerpt{flex:1 1 100%;margin-top:4px;font-size:13px;color:var(--muted);}
 .essay-body{flex:1 1 100%;margin-top:0;font-size:14px;color:var(--text);}
 .essay-body p{margin:.7em 0;}
@@ -192,6 +193,7 @@ const listItems = posts.map((p) => {
     const jsHref = href.replace(/'/g, '%27');
     return `<article class="post essay" onclick="location.href='${jsHref}'" role="link">
   <div class="essay-body">${bodyHtml}</div>
+  ${dateHtml}
 </article>`;
   }
   // 文章：标题用《》包裹、浅灰背景块区分，点击进详情
