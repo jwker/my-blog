@@ -56,12 +56,12 @@ main{padding:36px 0 64px;}
 article.post{padding:22px 0;border-bottom:1px solid var(--line);}
 article.post:last-child{border-bottom:none;}
 article.post.essay{cursor:pointer;}
-.post .title{flex:1 1 auto;min-width:0;font-size:16px;color:var(--text);text-decoration:none;}
-.post.article .title{display:inline-block;background:rgba(0,0,0,.045);padding:5px 14px;border-radius:8px;}
-.post .date{font-size:12px;color:var(--muted);white-space:nowrap;}
-.post.essay .date{margin-left:auto;}
-.post .excerpt{flex:1 1 100%;margin-top:4px;font-size:13px;color:var(--muted);}
-.essay-body{flex:1 1 100%;margin-top:0;font-size:14px;color:var(--text);}
+.post .title{display:inline-block;font-size:16px;color:var(--text);text-decoration:none;}
+.post .title:hover{color:var(--accent);}
+.post.article .title{background:rgba(0,0,0,.045);padding:5px 14px;border-radius:8px;}
+.post .date{display:block;margin-top:6px;font-size:12px;color:var(--muted);}
+.post .excerpt{margin-top:4px;font-size:13px;color:var(--muted);}
+.essay-body{margin-top:8px;font-size:14px;color:var(--text);}
 .essay-body p{margin:.7em 0;}
 .essay-body h1,.essay-body h2,.essay-body h3{line-height:1.5;margin:1em 0 .4em;font-size:1.1em;}
 .essay-body blockquote{margin:.8em 0;padding:.1em .8em;border-left:3px solid var(--accent);color:var(--muted);}
@@ -220,6 +220,7 @@ for (const p of posts) {
   const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
   const bodyHtml = md.render(stripLeadingH1(raw));
   const postHtml = `<article class="post-full">
+  ${(t.show_date === true) ? `<div class="p-date">${p.date.slice(0, 10)}</div>` : ''}
   <div class="md-body">${bodyHtml}</div>
   <a class="back" href="../index.html">← 返回列表</a>
 </article>`;
