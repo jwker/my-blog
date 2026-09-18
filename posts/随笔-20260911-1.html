@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>20260911-1 · 小姜同学的日常</title>
+<style>
+/* 极简白 */
+:root{
+  --bg:#ffffff; --text:#1a1a1a; --muted:#999999;
+  --line:#eeeeee; --accent:#1a1a1a;
+  --font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  --font-size:16px; --width:640px;
+}
+
+:root{--accent:#1a1a1a;--bg:#ffffff;--text:#1a1a1a;--font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;--font-size:16px}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-family);font-size:var(--font-size);line-height:1.8;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
+.wrap{max-width:var(--width);margin:0 auto;padding:0 24px;}
+header.site{padding:72px 0 28px;}
+.site-name{font-size:24px;font-weight:600;letter-spacing:0.04em;}
+.site-name a{color:var(--text);text-decoration:none;}
+.subtitle{margin-top:8px;font-size:13px;color:var(--muted);}
+main{padding:36px 0 64px;}
+article.post{padding:22px 0;border-bottom:1px solid var(--line);}
+article.post:last-child{border-bottom:none;}
+article.post.essay{cursor:pointer;}
+.post .title{display:inline-block;font-size:16px;color:var(--text);text-decoration:none;}
+.post .title:hover{color:var(--accent);}
+.post.article .title{background:rgba(0,0,0,.045);padding:5px 14px;border-radius:8px;}
+.post .date{display:block;margin-top:6px;font-size:12px;color:var(--muted);}
+.post .excerpt{margin-top:4px;font-size:13px;color:var(--muted);}
+.essay-body{margin-top:8px;font-size:14px;color:var(--text);}
+.essay-body p{margin:.7em 0;}
+.essay-body h1,.essay-body h2,.essay-body h3{line-height:1.5;margin:1em 0 .4em;font-size:1.1em;}
+.essay-body blockquote{margin:.8em 0;padding:.1em .8em;border-left:3px solid var(--accent);color:var(--muted);}
+.essay-body code{background:rgba(0,0,0,.06);padding:.1em .35em;border-radius:4px;font-size:.9em;}
+.essay-body pre{background:rgba(0,0,0,.05);padding:10px 14px;border-radius:8px;overflow-x:auto;}
+.essay-body img{max-width:100%;height:auto;border-radius:6px;}
+.essay-body a{color:var(--accent);}
+.essay-body ul,.essay-body ol{margin:.6em 0;padding-left:1.5em;}
+.post-full{padding:8px 0 40px;}
+.post-full .p-title{font-size:26px;font-weight:600;line-height:1.5;}
+.post-full .p-date{font-size:13px;color:var(--muted);margin-top:10px;}
+.md-body{margin-top:28px;font-size:1em;}
+.md-body h1,.md-body h2,.md-body h3{line-height:1.5;margin:1.6em 0 .6em;}
+.md-body h1{font-size:1.5em;}.md-body h2{font-size:1.3em;}.md-body h3{font-size:1.15em;}
+.md-body p{margin:1em 0;}
+.md-body blockquote{margin:1.2em 0;padding:.2em 1em;border-left:3px solid var(--accent);color:var(--muted);}
+.md-body code{background:rgba(0,0,0,.06);padding:.15em .4em;border-radius:4px;font-size:.9em;}
+.md-body pre{background:rgba(0,0,0,.05);padding:14px 16px;border-radius:8px;overflow-x:auto;}
+.md-body pre code{background:none;padding:0;}
+.md-body img{max-width:100%;height:auto;border-radius:6px;}
+.md-body a{color:var(--accent);}
+.md-body ul,.md-body ol{margin:1em 0;padding-left:1.6em;}
+.md-body table{border-collapse:collapse;margin:1em 0;}
+.md-body th,.md-body td{border:1px solid var(--line);padding:6px 12px;}
+.back{display:inline-block;margin-top:36px;font-size:13px;color:var(--muted);text-decoration:none;}
+.back:hover{color:var(--accent);}
+footer.site{border-top:1px solid var(--line);padding:24px 0 56px;font-size:12px;color:var(--muted);}
+@media (max-width:480px){.wrap{padding:0 18px;}header.site{padding:48px 0 20px;}.post-full .p-title{font-size:22px;}}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <div class="site-name"><a href="../index.html">小姜同学的日常</a></div>
+    <div class="subtitle">🙃</div>
+  </header>
+  <main>
+<article class="post-full">
+  <div class="p-date">2026-09-11</div>
+  <div class="md-body"><p>刚刚又遇到了AI Coding的一个头疼的事，我让他写后台的日志记录，他给我同步和异步两个方案，推荐我同步，写的很详细哦，要是没有耐心去读，真的发现不了问题。然后我问他“那如果主链路成功了，然后日志记录失败了，要提醒前台吗，这个请求算成功了吗”，他说业界普遍做法是不通知前台，日志会记录error，然后我说“你的规划中考虑到这点了是吧”，他回答“问得好 ——<strong>老实说：没有</strong>。”，他说没有！！！服了</p>
+</div>
+  <a class="back" href="../index.html">← 返回列表</a>
+</article>
+  </main>
+  <footer class="site">
+    <p>© 2026 小姜同学的日常</p>
+  </footer>
+</div>
+</body>
+</html>
