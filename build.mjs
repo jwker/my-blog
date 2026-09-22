@@ -10,12 +10,14 @@ import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import MarkdownIt from 'markdown-it';
+import sharp from 'sharp';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = __dirname;
 const contentDir = path.join(root, 'content');
 const distDir = path.join(root, 'dist');
 const templatesDir = path.join(root, 'templates');
+const imagesDir = path.join(root, 'images');
 
 // ---------- 读取配置 ----------
 const config = JSON.parse(fs.readFileSync(path.join(root, 'template.json'), 'utf8'));
@@ -88,6 +90,22 @@ article.post.essay{cursor:pointer;}
 .md-body th,.md-body td{border:1px solid var(--line);padding:6px 12px;}
 .back{display:inline-block;margin-top:36px;font-size:13px;color:var(--muted);text-decoration:none;}
 .back:hover{color:var(--accent);}
+/* 随笔图片九宫格（朋友圈式：一行最多 3 个；正好 4 张时 2×2；单张显示大图）
+   整体显示尺寸按用户要求缩小一倍：多图网格 50% 宽、单图 30% 宽 */
+.img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:1em 0;max-width:50%;}
+.img-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;display:block;background:var(--line);}
+.img-grid-4{grid-template-columns:repeat(2,1fr);}
+.img-grid-single{grid-template-columns:1fr;max-width:30%;}
+.img-grid-single img{aspect-ratio:auto;height:auto;object-fit:contain;}
+/* 图片灯箱：点击小图全屏看大图 */
+.lb{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;}
+.lb.open{display:flex;}
+.lb img{max-width:92vw;max-height:92vh;border-radius:4px;}
+.lb-btn{position:absolute;color:#fff;background:rgba(255,255,255,.15);border:none;border-radius:50%;width:44px;height:44px;font-size:22px;line-height:1;cursor:pointer;z-index:2;}
+.lb-btn:active{background:rgba(255,255,255,.3);}
+.lb-prev{left:12px;top:50%;transform:translateY(-50%);}
+.lb-next{right:12px;top:50%;transform:translateY(-50%);}
+.lb-close{right:12px;top:12px;font-size:18px;}
 footer.site{border-top:1px solid var(--line);padding:24px 0 56px;font-size:12px;color:var(--muted);}
 @media (max-width:480px){.wrap{padding:0 18px;}header.site{padding:48px 0 20px;}.post-full .p-title{font-size:22px;}}
 `;
@@ -143,7 +161,35 @@ function parseFile(f) {
 
 // ---------- 页面骨架 ----------
 // rootPrefix：相对站点根的前缀（列表页 ''，文章页 '../'）
-function page(title, body, rootPrefix = '') {
+// needsLightbox：随笔页面（列表页/随笔详情页）带图片灯箱，文章页不带
+function page(title, body, rootPrefix = '', needsLightbox = false) {
+  const lightbox = needsLightbox ? `<div class="lb" id="lb">
+  <img id="lbImg" src="" alt="">
+  <button class="lb-btn lb-prev" onclick="lbNav(-1)">‹</button>
+  <button class="lb-btn lb-next" onclick="lbNav(1)">›</button>
+  <button class="lb-btn lb-close" onclick="lbClose()">×</button>
+</div>
+<script>
+(function(){
+  var imgs = Array.prototype.slice.call(document.querySelectorAll('.img-grid img'));
+  if (!imgs.length) return;
+  var lb = document.getElementById('lb'), cur = 0;
+  function show(i){ cur = (i + imgs.length) % imgs.length; document.getElementById('lbImg').src = imgs[cur].getAttribute('src'); lb.classList.add('open'); }
+  window.lbClose = function(){ lb.classList.remove('open'); };
+  window.lbNav = function(d){ show(cur + d); };
+  imgs.forEach(function(img, i){
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', function(ev){ ev.stopPropagation(); show(i); });
+  });
+  lb.addEventListener('click', function(ev){ if (ev.target === lb) lbClose(); });
+  document.addEventListener('keydown', function(e){
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') lbClose();
+    if (e.key === 'ArrowLeft') lbNav(-1);
+    if (e.key === 'ArrowRight') lbNav(1);
+  });
+})();
+<\/script>` : '';
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -169,13 +215,75 @@ ${body}
     <p>© ${new Date().getFullYear()} ${site.name || ''}</p>
   </footer>
 </div>
+${lightbox}
 </body>
 </html>`;
+}
+
+// ---------- 图片：压缩并拷贝到 dist/images/ ----------
+// 规则：jpg/jpeg/webp 压成 jpeg/webp（最长边 1600px、质量 80），png 无损压紧，
+//       gif 与其它格式原样拷贝（保留动画等）。文件名保持不变，md 里的引用不用改。
+const IMG_MAX_EDGE = 1600;
+const IMG_QUALITY = 80;
+
+async function buildImages(srcDir, outDir) {
+  if (!fs.existsSync(srcDir)) return 0;
+  fs.mkdirSync(outDir, { recursive: true });
+  let count = 0;
+  for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+    if (entry.name.startsWith('.')) continue; // 跳过 .gitkeep、.DS_Store 等隐藏文件
+    const src = path.join(srcDir, entry.name);
+    const out = path.join(outDir, entry.name);
+    if (entry.isDirectory()) {
+      count += await buildImages(src, out);
+      continue;
+    }
+    const ext = path.extname(entry.name).toLowerCase();
+    try {
+      if (['.jpg', '.jpeg', '.png', '.webp'].includes(ext)) {
+        const img = sharp(src).rotate().resize({ width: IMG_MAX_EDGE, height: IMG_MAX_EDGE, fit: 'inside', withoutEnlargement: true });
+        if (ext === '.png') await img.png({ compressionLevel: 9 }).toFile(out);
+        else if (ext === '.webp') await img.webp({ quality: IMG_QUALITY }).toFile(out);
+        else await img.jpeg({ quality: IMG_QUALITY, mozjpeg: true }).toFile(out);
+      } else {
+        fs.copyFileSync(src, out);
+      }
+      count++;
+    } catch (e) {
+      console.warn(`  ⚠ 图片处理失败，已原样拷贝: ${path.relative(root, src)}（${e.message}）`);
+      fs.copyFileSync(src, out);
+      count++;
+    }
+  }
+  return count;
+}
+
+// 图片引用路径适配：md 里写 images/xxx.jpg、/images/xxx.jpg 或 ../images/xxx.jpg 都归一
+// 列表页在站点根（前缀 ''），文章页在 posts/ 下（前缀 '../'）
+function fixImageSrc(html, rootPrefix) {
+  return html.replace(/src="(?:\.\.\/)?\/?images\//g, rootPrefix ? `src="${rootPrefix}images/` : 'src="images/');
+}
+
+// 随笔图片分组：把连续的图片段落合并成九宫格容器（朋友圈式）
+// 兼容两种渲染形态：每张图独立 <p>（图片间有空行）、多张图同处一个 <p>（连续行书写，img 间夹 <br>）
+// 正好 4 张 → 2×2；单张 → 大图；其余 3 列往下排
+function groupImages(html) {
+  // 兼容两种渲染形态：每张图独立 <p>（图片间有空行）、多张图同处一个 <p>（连续行书写，img 间夹 <br>）
+  const imgBlock = /(<p><img[^>]*><\/p>\s*)+|<p>(?:(?:<img[^>]*>|<br\s*\/?>)\s*)+<\/p>/g;
+  return html.replace(imgBlock, (m) => {
+    const inner = m.replace(/<\/?p>|<br\s*\/?>/g, '').trim();
+    const count = (inner.match(/<img/g) || []).length;
+    if (!count) return m;
+    const cls = count === 1 ? 'img-grid img-grid-single' : (count === 4 ? 'img-grid img-grid-4' : 'img-grid');
+    return `<div class="${cls}">${inner}</div>`;
+  });
 }
 
 // ---------- 主流程 ----------
 fs.rmSync(distDir, { recursive: true, force: true });
 fs.mkdirSync(path.join(distDir, 'posts'), { recursive: true });
+// 图片：压缩并拷贝（顶层 await，构建脚本为 ESM）
+const imgCount = await buildImages(imagesDir, path.join(distDir, 'images'));
 
 const files = walk(contentDir).sort();
 const posts = files.map(parseFile).sort((a, b) => (a.date === b.date ? 0 : (a.date < b.date ? 1 : -1)));
@@ -187,9 +295,9 @@ const listItems = posts.map((p) => {
   const href = `posts/${encodeURI(p.slug)}.html`;
   const dateHtml = (t.show_date === true) ? `<span class="date">${p.date.slice(0, 10)}</span>` : '';
   if (p.isEssay) {
-    // 随笔：主体内容，不显示标题，点击整个区块进详情
+    // 随笔：主体内容，不显示标题，点击整个区块进详情；图片走朋友圈九宫格
     const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
-    const bodyHtml = md.render(stripLeadingH1(raw));
+    const bodyHtml = groupImages(fixImageSrc(md.render(stripLeadingH1(raw)), ''));
     const jsHref = href.replace(/'/g, '%27');
     return `<article class="post essay" onclick="location.href='${jsHref}'" role="link">
   <div class="essay-body">${bodyHtml}</div>
@@ -211,22 +319,26 @@ const listItems = posts.map((p) => {
 
 const indexHtml = page(
   `${site.name || '我的博客'}${site.subtitle ? ' · ' + site.subtitle : ''}`,
-  listItems || '<p style="color:var(--muted)">还没有文章。在 content/ 目录新建 .md 文件即可。</p>'
+  listItems || '<p style="color:var(--muted)">还没有文章。在 content/ 目录新建 .md 文件即可。</p>',
+  '',
+  true // 列表页含随笔内联全文，需要灯箱
 );
 fs.writeFileSync(path.join(distDir, 'index.html'), indexHtml);
 
 // 文章页
 for (const p of posts) {
   const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
-  const bodyHtml = md.render(stripLeadingH1(raw));
+  const rendered = fixImageSrc(md.render(stripLeadingH1(raw)), '../');
+  // 随笔详情页：图片九宫格 + 灯箱；文章详情页：自然流展示
+  const bodyHtml = p.isEssay ? groupImages(rendered) : rendered;
   const postHtml = `<article class="post-full">
   ${(t.show_date === true) ? `<div class="p-date">${p.date.slice(0, 10)}</div>` : ''}
   <div class="md-body">${bodyHtml}</div>
   <a class="back" href="../index.html">← 返回列表</a>
 </article>`;
-  fs.writeFileSync(path.join(distDir, 'posts', p.slug + '.html'), page(`${displayTitle(p.title)} · ${site.name || '我的博客'}`, postHtml, '../'));
+  fs.writeFileSync(path.join(distDir, 'posts', p.slug + '.html'), page(`${displayTitle(p.title)} · ${site.name || '我的博客'}`, postHtml, '../', p.isEssay));
 }
 
-console.log(`✔ 构建完成：${posts.length} 篇文章 → dist/（模板：${tplName}）`);
+console.log(`✔ 构建完成：${posts.length} 篇文章 + ${imgCount} 张图片 → dist/（模板：${tplName}）`);
 console.log(`  - 列表页：index.html`);
 console.log(`  - 文章页：${posts.map(p => 'posts/' + p.slug + '.html').join('、')}`);

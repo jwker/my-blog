@@ -8,6 +8,7 @@
     "preview": "python3 -m http.server 8080 -d dist"
   },
   "dependencies": {
-    "markdown-it": "^14.1.0"
+    "markdown-it": "^14.1.0",
+    "sharp": "^0.35.4"
   }
 }

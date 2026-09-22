@@ -1,10 +1,19 @@
 # 极简 md 博客：构建并发布到 GitHub Pages（gh-pages 分支）
-# 触发方式：push 到 main / 手动运行
+# 触发方式：只有正文/脚本/配置变化才触发；传图（images/ 变化）不触发，等正文提交时一起上线
+# 并发：新提交触发时自动取消正在跑的旧构建，只保留最新一次
 name: Build & Deploy
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'content/**'
+      - 'build.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'template.json'
+      - 'templates/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:
@@ -12,7 +21,7 @@ permissions:
 
 concurrency:
   group: md-blog-build
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-deploy:
@@ -23,14 +32,19 @@ jobs:
         with:
           fetch-depth: 0  # 拉取完整 git 历史，构建时才能按每篇文章的真实提交时间排序
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
           node-version: 22
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build site
         run: npm run build
