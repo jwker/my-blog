@@ -113,13 +113,6 @@ footer.site{border-top:1px solid var(--line);padding:24px 0 56px;font-size:12px;
 // ---------- Markdown 渲染 ----------
 const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
 
-// 剥离正文开头的 "# 标题"（页面已用文件名当标题，避免重复）
-function stripLeadingH1(raw) {
-  const lines = raw.split('\n');
-  if (lines[0] && /^#\s+/.test(lines[0])) lines.shift();
-  return lines.join('\n');
-}
-
 // 列表显示用标题：去掉"随笔"字样（随笔是常态，标题不再重复出现"随笔"）
 function displayTitle(title) {
   const t = title.replace(/随笔/g, '').replace(/^[\s·\-—_、，,]+/, '').trim();
@@ -297,7 +290,7 @@ const listItems = posts.map((p) => {
   if (p.isEssay) {
     // 随笔：主体内容，不显示标题，点击整个区块进详情；图片走朋友圈九宫格
     const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
-    const bodyHtml = groupImages(fixImageSrc(md.render(stripLeadingH1(raw)), ''));
+    const bodyHtml = groupImages(fixImageSrc(md.render(raw), ''));
     const jsHref = href.replace(/'/g, '%27');
     return `<article class="post essay" onclick="location.href='${jsHref}'" role="link">
   <div class="essay-body">${bodyHtml}</div>
@@ -306,7 +299,7 @@ const listItems = posts.map((p) => {
   }
   // 文章：标题用《》包裹、浅灰背景块区分，点击进详情
   const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
-  const bodyHtml = md.render(stripLeadingH1(raw));
+  const bodyHtml = md.render(raw);
   const m = bodyHtml.match(/<p>([\s\S]*?)<\/p>/);
   const excerpt = (m ? m[1] : bodyHtml).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   const excerptHtml = (t.show_excerpt && excerpt) ? `<p class="excerpt">${excerpt.length > 80 ? excerpt.slice(0, 80) + '…' : excerpt}</p>` : '';
@@ -328,7 +321,7 @@ fs.writeFileSync(path.join(distDir, 'index.html'), indexHtml);
 // 文章页
 for (const p of posts) {
   const raw = fs.readFileSync(path.join(contentDir, p.slug + '.md'), 'utf8');
-  const rendered = fixImageSrc(md.render(stripLeadingH1(raw)), '../');
+  const rendered = fixImageSrc(md.render(raw), '../');
   // 随笔详情页：图片九宫格 + 灯箱；文章详情页：自然流展示
   const bodyHtml = p.isEssay ? groupImages(rendered) : rendered;
   const postHtml = `<article class="post-full">
