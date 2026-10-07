@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026091801 · 小姜同学的日常</title>
+<style>
+/* 极简白 */
+:root{
+  --bg:#ffffff; --text:#1a1a1a; --muted:#999999;
+  --line:#eeeeee; --accent:#1a1a1a;
+  --font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  --font-size:16px; --width:640px;
+}
+
+:root{--accent:#1a1a1a;--bg:#ffffff;--text:#1a1a1a;--font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;--font-size:16px}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-family);font-size:var(--font-size);line-height:1.8;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
+.wrap{max-width:var(--width);margin:0 auto;padding:0 24px;}
+header.site{padding:72px 0 28px;}
+.site-name{font-size:24px;font-weight:600;letter-spacing:0.04em;}
+.site-name a{color:var(--text);text-decoration:none;}
+.subtitle{margin-top:8px;font-size:13px;color:var(--muted);}
+main{padding:36px 0 64px;}
+article.post{padding:22px 0;border-bottom:1px solid var(--line);}
+article.post:last-child{border-bottom:none;}
+article.post.essay{cursor:pointer;}
+.post .title{display:inline-block;font-size:16px;color:var(--text);text-decoration:none;}
+.post .title:hover{color:var(--accent);}
+.post.article .title{background:rgba(0,0,0,.045);padding:5px 14px;border-radius:8px;}
+.post .date{display:block;margin-top:6px;font-size:12px;color:var(--muted);}
+.post .excerpt{margin-top:4px;font-size:13px;color:var(--muted);}
+.essay-body{margin-top:8px;font-size:14px;color:var(--text);}
+.essay-body p{margin:.7em 0;}
+.essay-body h1,.essay-body h2,.essay-body h3{line-height:1.5;margin:1em 0 .4em;font-size:1.1em;}
+.essay-body blockquote{margin:.8em 0;padding:.1em .8em;border-left:3px solid var(--accent);color:var(--muted);}
+.essay-body code{background:rgba(0,0,0,.06);padding:.1em .35em;border-radius:4px;font-size:.9em;}
+.essay-body pre{background:rgba(0,0,0,.05);padding:10px 14px;border-radius:8px;overflow-x:auto;}
+.essay-body img{max-width:100%;height:auto;border-radius:6px;}
+.essay-body a{color:var(--accent);}
+.essay-body ul,.essay-body ol{margin:.6em 0;padding-left:1.5em;}
+.post-full{padding:8px 0 40px;}
+.post-full .p-title{font-size:26px;font-weight:600;line-height:1.5;}
+.post-full .p-date{font-size:13px;color:var(--muted);margin-top:10px;}
+.md-body{margin-top:28px;font-size:1em;}
+.md-body h1,.md-body h2,.md-body h3{line-height:1.5;margin:1.6em 0 .6em;}
+.md-body h1{font-size:1.5em;}.md-body h2{font-size:1.3em;}.md-body h3{font-size:1.15em;}
+.md-body p{margin:1em 0;}
+.md-body blockquote{margin:1.2em 0;padding:.2em 1em;border-left:3px solid var(--accent);color:var(--muted);}
+.md-body code{background:rgba(0,0,0,.06);padding:.15em .4em;border-radius:4px;font-size:.9em;}
+.md-body pre{background:rgba(0,0,0,.05);padding:14px 16px;border-radius:8px;overflow-x:auto;}
+.md-body pre code{background:none;padding:0;}
+.md-body img{max-width:100%;height:auto;border-radius:6px;}
+.md-body a{color:var(--accent);}
+.md-body ul,.md-body ol{margin:1em 0;padding-left:1.6em;}
+.md-body table{border-collapse:collapse;margin:1em 0;}
+.md-body th,.md-body td{border:1px solid var(--line);padding:6px 12px;}
+.back{display:inline-block;margin-top:36px;font-size:13px;color:var(--muted);text-decoration:none;}
+.back:hover{color:var(--accent);}
+/* 随笔图片九宫格（朋友圈式：一行最多 3 个；正好 4 张时 2×2；单张显示大图）
+   整体显示尺寸按用户要求缩小一倍：多图网格 50% 宽、单图 30% 宽 */
+.img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:1em 0;max-width:50%;}
+.img-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;display:block;background:var(--line);}
+.img-grid-4{grid-template-columns:repeat(2,1fr);}
+.img-grid-single{grid-template-columns:1fr;max-width:30%;}
+.img-grid-single img{aspect-ratio:auto;height:auto;object-fit:contain;}
+/* 图片灯箱：点击小图全屏看大图 */
+.lb{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;}
+.lb.open{display:flex;}
+.lb img{max-width:92vw;max-height:92vh;border-radius:4px;}
+.lb-btn{position:absolute;color:#fff;background:rgba(255,255,255,.15);border:none;border-radius:50%;width:44px;height:44px;font-size:22px;line-height:1;cursor:pointer;z-index:2;}
+.lb-btn:active{background:rgba(255,255,255,.3);}
+.lb-prev{left:12px;top:50%;transform:translateY(-50%);}
+.lb-next{right:12px;top:50%;transform:translateY(-50%);}
+.lb-close{right:12px;top:12px;font-size:18px;}
+footer.site{border-top:1px solid var(--line);padding:24px 0 56px;font-size:12px;color:var(--muted);}
+@media (max-width:480px){.wrap{padding:0 18px;}header.site{padding:48px 0 20px;}.post-full .p-title{font-size:22px;}}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <div class="site-name"><a href="../index.html">小姜同学的日常</a></div>
+    <div class="subtitle">🙃</div>
+  </header>
+  <main>
+<article class="post-full">
+  <div class="p-date">2026-09-18</div>
+  <div class="md-body"><p>我觉得现在AI Coding在补充一些小需求小改动上任何人用起来难度都不算大了，结果一般也会符合预期，难的在于从0开始一个项目、需求还没固定的项目，挺难的，而且工作量很大 🙃</p>
+</div>
+  <a class="back" href="../index.html">← 返回列表</a>
+</article>
+  </main>
+  <footer class="site">
+    <p>© 2026 小姜同学的日常</p>
+  </footer>
+</div>
+<div class="lb" id="lb">
+  <img id="lbImg" src="" alt="">
+  <button class="lb-btn lb-prev" onclick="lbNav(-1)">‹</button>
+  <button class="lb-btn lb-next" onclick="lbNav(1)">›</button>
+  <button class="lb-btn lb-close" onclick="lbClose()">×</button>
+</div>
+<script>
+(function(){
+  var imgs = Array.prototype.slice.call(document.querySelectorAll('.img-grid img'));
+  if (!imgs.length) return;
+  var lb = document.getElementById('lb'), cur = 0;
+  function show(i){ cur = (i + imgs.length) % imgs.length; document.getElementById('lbImg').src = imgs[cur].getAttribute('src'); lb.classList.add('open'); }
+  window.lbClose = function(){ lb.classList.remove('open'); };
+  window.lbNav = function(d){ show(cur + d); };
+  imgs.forEach(function(img, i){
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', function(ev){ ev.stopPropagation(); show(i); });
+  });
+  lb.addEventListener('click', function(ev){ if (ev.target === lb) lbClose(); });
+  document.addEventListener('keydown', function(e){
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') lbClose();
+    if (e.key === 'ArrowLeft') lbNav(-1);
+    if (e.key === 'ArrowRight') lbNav(1);
+  });
+})();
+</script>
+</body>
+</html>
